@@ -1,0 +1,42 @@
+:root {
+  --jp-green: #3a7d44;
+  --jp-forest: #1b3a2a;
+  --jp-olive: #46621d;
+  --jp-cream: #f6f9f1;
+  --jp-border: #cfddbe;
+  --jp-gold: #e3a92b;
+}
+
+body {
+  background: var(--jp-cream);
+  color: var(--jp-forest);
+}
+
+.jp-header {
+  background: var(--jp-forest);
+  color: #fff;
+}
+
+.jp-card {
+  background: #fff;
+  border: 1px solid var(--jp-border);
+  border-radius: 10px;
+}
+
+.jp-price {
+  color: var(--jp-green);
+  font-weight: 800;
+}
+
+.jp-btn {
+  background: var(--jp-green);
+  border: 0;
+  color: #fff;
+  font-weight: 700;
+  min-height: 44px;
+}
+
+.jp-btn:hover {
+  background: var(--jp-olive);
+  color: #fff;
+}
