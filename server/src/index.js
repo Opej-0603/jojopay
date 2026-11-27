@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import express from 'express';
 import { query } from './db.js';
@@ -22,6 +23,34 @@ app.get('/api/health', async (req, res) => {
     }
   });
 
+  app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+  
+    try {
+      const { rows } = await query(
+        `SELECT id, full_name, email, phone, role, password_hash
+           FROM users WHERE email = $1`,
+        [email.toLowerCase()]
+      );
+      const user = rows[0];
+      const passwordOk = user && (await bcrypt.compare(password, user.password_hash));
+  
+      if (!passwordOk) {
+        return res.status(401).json({ message: 'Invalid email or password.' });
+      }
+  
+      const { password_hash, ...safeUser } = user;
+      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+res.json({ user: safeUser, token });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
