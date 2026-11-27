@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import express from 'express';
 import { query } from './db.js';
+import { requireAuth } from './middleware/auth.js';
 import cors from 'cors';
 
 const app = express();
@@ -46,6 +47,18 @@ app.get('/api/health', async (req, res) => {
       const { password_hash, ...safeUser } = user;
       const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 res.json({ user: safeUser, token });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get('/api/auth/me', requireAuth, async (req, res) => {
+    try {
+      const { rows } = await query(
+        'SELECT id, full_name, email, phone, role FROM users WHERE id = $1',
+        [req.user.id]
+      );
+      res.json(rows[0]);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
