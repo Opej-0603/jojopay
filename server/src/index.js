@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import express from 'express';
-import { query } from './db.js';
+import { query, getClient } from './db.js';
 import { requireAuth } from './middleware/auth.js';
 import cors from 'cors';
 
@@ -61,6 +61,70 @@ res.json({ user: safeUser, token });
       res.json(rows[0]);
     } catch (err) {
       res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post('/api/orders', requireAuth, async (req, res) => {
+    const { items, shippingAddress, contactPhone } = req.body;
+  
+    if (!Array.isArray(items) || items.length === 0 || !shippingAddress || !contactPhone) {
+      return res.status(400).json({ message: 'Items, address and phone are required.' });
+    }
+  
+    const client = await getClient();
+    try {
+      await client.query('BEGIN');
+  
+      let total = 0;
+      const lines = [];
+  
+      for (const item of items) {
+        const quantity = Number(item.quantity);
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          const err = new Error('Invalid quantity.');
+          err.status = 400;
+          throw err;
+        }
+  
+        const { rows } = await client.query(
+          `UPDATE products SET stock = stock - $1
+            WHERE id = $2 AND stock >= $1
+        RETURNING id, price`,
+          [quantity, item.id]
+        );
+        if (rows.length === 0) {
+          const err = new Error('A product is unavailable or out of stock.');
+          err.status = 409;
+          throw err;
+        }
+  
+        total += Number(rows[0].price) * quantity;
+        lines.push({ productId: rows[0].id, quantity, unitPrice: rows[0].price });
+      }
+  
+      const orderResult = await client.query(
+        `INSERT INTO orders (user_id, total, shipping_address, contact_phone)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, total, status, created_at`,
+        [req.user.id, total, shippingAddress, contactPhone]
+      );
+      const order = orderResult.rows[0];
+  
+      for (const line of lines) {
+        await client.query(
+          `INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+           VALUES ($1, $2, $3, $4)`,
+          [order.id, line.productId, line.quantity, line.unitPrice]
+        );
+      }
+  
+      await client.query('COMMIT');
+      res.status(201).json(order);
+    } catch (err) {
+      await client.query('ROLLBACK');
+      res.status(err.status || 500).json({ message: err.message });
+    } finally {
+      client.release();
     }
   });
   

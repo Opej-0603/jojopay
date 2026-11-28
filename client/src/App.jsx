@@ -4,6 +4,7 @@ import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { useCart } from './context/CartContext.jsx';
+import Cart from './pages/Cart.jsx';
 
 function App() {
   const { user, logout } = useAuth();
@@ -37,6 +38,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </>
   );
