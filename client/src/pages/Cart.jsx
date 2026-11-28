@@ -56,8 +56,7 @@ export default function Cart() {
               <span>Total</span>
               <span>₦{total.toLocaleString()}</span>
             </div>
-            <button className="btn jp-btn w-100">Proceed to checkout</button>
-          </div>
+            <Link to="/checkout" className="btn jp-btn w-100">Proceed to checkout</Link>          </div>
         </aside>
       </div>
     </main>
