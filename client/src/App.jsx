@@ -3,9 +3,11 @@ import Home from './pages/Home.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import { useCart } from './context/CartContext.jsx';
 
 function App() {
   const { user, logout } = useAuth();
+  const { count } = useCart();
   return (
     <>
       <header className="jp-header py-3">
@@ -13,6 +15,7 @@ function App() {
           <Link to="/" className="fw-bold fs-4 text-white text-decoration-none">JojoPay</Link>
           
           <nav className="d-flex gap-3 align-items-center">
+          <Link to="/cart" className="text-white">Cart ({count})</Link>
   {user ? (
     <>
       <span className="text-white">Hi, {user.full_name.split(' ')[0]}</span>

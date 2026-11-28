@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useCart } from '../context/CartContext.jsx';
 
 function Home() {
+  const { addItem } = useCart();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState('');
 
@@ -27,8 +29,7 @@ function Home() {
                   ₦{Number(p.old_price).toLocaleString()}
                 </p>
               )}
-              <button className="btn jp-btn mt-auto">Add to cart</button>
-            </div>
+<button className="btn jp-btn mt-auto" onClick={() => addItem(p)}>Add to cart</button>            </div>
           </div>
         ))}
       </div>
