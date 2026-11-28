@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const location = useLocation();
     const justRegistered = location.state?.registered;
     const [form, setForm] = useState({ email: '', password: '' });
@@ -27,8 +29,7 @@ export default function Login() {
         if (!res.ok) {
           setError(data.message);
         } else {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+            login(data);
           navigate('/');
         }
       } catch {
